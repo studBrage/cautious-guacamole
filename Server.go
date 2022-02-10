@@ -14,29 +14,15 @@ func main() {
 	laddy, _ := net.ResolveTCPAddr("tcp", "0.0.0.0:20013")
 	listen, _ := net.ListenTCP("tcp", laddy)
 
-	// raddy, _ := net.ResolveTCPAddr("tcp", "0.0.0.0:20012")
-	// conn, _ := net.DialTCP("tcp", nil, raddy)
-	// fmt.Println(conn.LocalAddr().String())
+	conn, _ := listen.AcceptTCP()
 
-	// if err == nil {
-	// }
-
-	// defer conn.Close()
 	defer listen.Close()
 
+	go write(conn, "player 1")
+	go read(conn)
+
 	for {
-		inConn, err := listen.AcceptTCP()
-		if err != nil {
-			fmt.Println("Error connecting:", err.Error())
-			return
-		}
-		fmt.Println("Connection established with adress: ", inConn.RemoteAddr().String())
-
-		go write(inConn, "Player 1")
 	}
-
-	// go read(conn)
-
 }
 
 func read(inconn *net.TCPConn) {
@@ -49,6 +35,7 @@ func read(inconn *net.TCPConn) {
 		}
 		//fmt.Println(n, "bytes recieved. Local:", conn.LocalAddr().String(), " Remote:", conn.RemoteAddr().String())
 		msg := strings.Split(string(buffer[:n]), "\\x00")
+		fmt.Println()
 		fmt.Println(msg[1], ": ", msg[0])
 		time.Sleep(1000 * time.Millisecond)
 	}
@@ -56,10 +43,11 @@ func read(inconn *net.TCPConn) {
 
 func write(conn *net.TCPConn, user string) {
 	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print("Me: ")
 	for scanner.Scan() {
 
-		fmt.Println("skriv en melding")
-		fmt.Print(user, ": ")
+		// fmt.Println("skriv en melding")
+		fmt.Print("Me: ")
 		msg := scanner.Text()
 
 		msg += "\\x00" + user
